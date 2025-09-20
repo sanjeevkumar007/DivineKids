@@ -1,4 +1,5 @@
 ﻿using DivineKids.Application.Contracts;
+using DivineKids.Infrastructure.Email;
 using DivineKids.Infrastructure.Identity;
 using DivineKids.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -26,6 +27,10 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
 
         services.AddIdentityAndAuthentication(configuration);
+
+        // inside AddInfrastructure after other Configure calls
+        services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.SectionName));
+        services.AddTransient<IEmailService, SmtpEmailService>();
 
         return services;
     }
