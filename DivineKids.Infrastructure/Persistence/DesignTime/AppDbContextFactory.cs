@@ -1,6 +1,7 @@
 ﻿using DivineKids.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 
 namespace DivineKids.Infrastructure.Persistence.DesignTime;
 
@@ -8,8 +9,30 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
 {
     public AppDbContext CreateDbContext(string[] args)
     {
-        var builder = new DbContextOptionsBuilder<AppDbContext>();
-        builder.UseSqlServer("Server=H-5CH2271N89\\SQLEXPRESS01;Database=DivineKidsdDB;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=true");
-        return new AppDbContext(builder.Options);
+        // Determine environment (falls back to Development)
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+
+        // Build configuration (allows ConnectionStrings:Default override via env vars)
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: true)
+            .AddJsonFile($"appsettings.{environment}.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build();
+
+        // Fallback connection string if none provided in config
+        var connectionString = configuration.GetConnectionString("AzureMySqlConnection")
+            ?? "Server=localhost;Port=3306;Database=DivineKidsDb;User Id=appuser;Password=ChangeMe123!;TreatTinyAsBoolean=true;";
+
+        // Auto-detect server version (works for MariaDB/MySQL)
+        var serverVersion = ServerVersion.AutoDetect(connectionString);
+
+        var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+
+        optionsBuilder.UseMySql(
+            connectionString,
+            serverVersion);
+
+        return new AppDbContext(optionsBuilder.Options);
     }
 }

@@ -16,11 +16,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
+        var connectionString = configuration.GetConnectionString("AzureMySqlConnection")
             ?? throw new InvalidOperationException("Missing connection string 'DefaultConnection'.");
 
         services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(connectionString));
+            options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
         services.AddScoped(typeof(IGenericRepository<>), typeof(Repositories.GenericRepository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
