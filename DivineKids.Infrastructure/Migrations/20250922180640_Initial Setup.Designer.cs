@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DivineKids.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250909112358_InitialSetup")]
+    [Migration("20250922180640_Initial Setup")]
     partial class InitialSetup
     {
         /// <inheritdoc />
