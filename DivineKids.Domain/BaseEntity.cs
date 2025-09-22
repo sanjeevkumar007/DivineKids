@@ -1,5 +1,5 @@
 ﻿namespace DivineKids.Domain;
-public class BaseEntity
+public abstract class BaseEntity
 {
-    public int Id { get; set; }
+    public int Id { get; protected set; }
 }

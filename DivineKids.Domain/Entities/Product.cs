@@ -84,7 +84,15 @@ public sealed class Product : BaseEntity
 
     public void SetDimensions(decimal? lengthCm, decimal? widthCm, decimal? heightCm)
     {
-        if (lengthCm is < 0 || widthCm is < 0 || heightCm is < 0) throw new ArgumentOutOfRangeException("Dimensions must be non-negative.");
+        if (!RequiresShipping) throw new InvalidOperationException("Cannot set dimensions when shipping not required.");
+
+        if (lengthCm is < 0)
+            throw new ArgumentOutOfRangeException(nameof(lengthCm), "Dimension must be positive.");
+        if (widthCm is < 0)
+            throw new ArgumentOutOfRangeException(nameof(widthCm), "Dimension must be positive.");
+        if (heightCm is < 0)
+            throw new ArgumentOutOfRangeException(nameof(heightCm), "Dimension must be positive.");
+
         LengthCm = lengthCm;
         WidthCm = widthCm;
         HeightCm = heightCm;
