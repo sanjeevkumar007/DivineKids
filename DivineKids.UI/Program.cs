@@ -6,7 +6,7 @@ using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Environment.WebRootPath ??= Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 builder.Services
     .AddControllers()
     .AddJsonOptions(o =>
@@ -89,11 +89,18 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseDeveloperExceptionPage();
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "DivineKids API v1");
+    c.DocumentTitle = "DivineKids API Docs";
+});
 
-app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseCors(AllowAllCors);
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStaticFiles();
 app.MapControllers();
 await app.RunAsync();

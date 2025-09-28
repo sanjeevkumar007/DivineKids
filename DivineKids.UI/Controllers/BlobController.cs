@@ -18,44 +18,48 @@ public partial class BlobController : ControllerBase
 
     [HttpPost("UploadImage")]
     [RequestSizeLimit(MaxFileBytes)]
-    public async Task<IActionResult> UploadImage(IFormFile file, [FromServices] IWebHostEnvironment environment, CancellationToken cancellationToken)
+    public async Task<IActionResult> UploadImage(
+    IFormFile file,
+    [FromServices] IWebHostEnvironment env,
+    CancellationToken cancellationToken)
     {
-        if (file is null || file.Length == 0)
+        if (file == null || file.Length == 0)
             return BadRequest("No file uploaded.");
 
         if (file.Length > MaxFileBytes)
             return BadRequest($"File exceeds size limit of {MaxFileBytes / (1024 * 1024)} MB.");
 
-        var ext = Path.GetExtension(file.FileName);
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (!_allowedExtensions.Contains(ext))
             return BadRequest("Unsupported file type.");
 
-        // Ensure wwwroot exists (normally auto if folder exists in project)
-        if (string.IsNullOrWhiteSpace(environment.WebRootPath))
-        {
-            environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-        }
+        // Ensure WebRootPath is set (wwwroot)
+        var webRoot = env.WebRootPath;
+        if (string.IsNullOrWhiteSpace(webRoot))
+            webRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 
-        var relativeFolder = Path.Combine("uploads", "images");
-        var physicalFolder = Path.Combine(environment.WebRootPath, relativeFolder);
-        Directory.CreateDirectory(physicalFolder);
+        // Ensure uploads folder exists
+        var uploadFolder = Path.Combine(webRoot, "uploads", "images");
+        Directory.CreateDirectory(uploadFolder);
 
-        // Sanitize original name (optional - not stored, but helpful if you decide to use it)
+        // Sanitize file name
         var baseName = Path.GetFileNameWithoutExtension(file.FileName);
         baseName = SanitizeFileNameRegex().Replace(baseName, "-");
         if (string.IsNullOrWhiteSpace(baseName))
             baseName = "img";
 
-        var safeName = $"{baseName}-{Guid.NewGuid():N}{ext}".ToLowerInvariant();
-        var fullPath = Path.Combine(physicalFolder, safeName);
+        var safeName = $"{baseName}-{Guid.NewGuid():N}{ext}";
+        var fullPath = Path.Combine(uploadFolder, safeName);
 
-        await using (var stream = System.IO.File.Create(fullPath))
+        Console.WriteLine($"Saving file to: {fullPath}");
+
+        await using (var stream = new FileStream(fullPath, FileMode.Create))
         {
             await file.CopyToAsync(stream, cancellationToken);
         }
 
-        var relativeUrl = Path.Combine(Path.DirectorySeparatorChar.ToString(), relativeFolder, safeName)
-            .Replace(Path.DirectorySeparatorChar, '/');
+        // Build URL (always forward slashes, works on Linux + Windows)
+        var relativeUrl = $"/uploads/images/{safeName}".Replace("\\", "/"); 
         var absoluteUrl = $"{Request.Scheme}://{Request.Host}{relativeUrl}";
 
         return Ok(new
@@ -67,6 +71,7 @@ public partial class BlobController : ControllerBase
             contentType = file.ContentType
         });
     }
+
 
     private static Regex SanitizeFileNameRegex()
     {
