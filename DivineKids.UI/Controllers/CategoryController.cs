@@ -56,7 +56,7 @@ public class CategoryController(ICategoryService categoryService, ILogger<Catego
         try
         {
             var result = await _categoryService.CreateAsync(categoryCommand, cancellationToken);
-            return CreatedAtAction("GetCategoryById", new { id = result.Id }, categoryCommand);
+            return Ok(result);
         }
         catch (Exception ex)
         {

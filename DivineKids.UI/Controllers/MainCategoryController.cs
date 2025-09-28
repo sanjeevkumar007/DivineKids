@@ -56,7 +56,7 @@ public class MainCategoryController(IMainCategoryService mainCategoryService, IL
         try
         {
             var result = await _mainCategoryService.CreateAsync(categoryCommand, cancellationToken);
-            return CreatedAtRoute("GetMainCategoryById", new { id = result.Id }, categoryCommand);
+            return Ok();
         }
         catch (Exception ex)
         {

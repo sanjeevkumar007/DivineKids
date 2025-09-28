@@ -60,7 +60,7 @@ public class ProductController(IProductService productService, ILogger<ProductCo
         try
         {
             var result = await _productService.CreateProductAsync(productCommand, cancellationToken);
-            return CreatedAtRoute("GetByProductIdAsync", new { id = result.Id }, productCommand);
+            return Ok(result);
         }
         catch (Exception ex)
         {
