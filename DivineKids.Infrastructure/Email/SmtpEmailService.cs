@@ -2,18 +2,14 @@ using DivineKids.Application.Common.Constants;
 using DivineKids.Application.Contracts;
 using DivineKids.Application.Features.Dtos.Email;
 using DivineKids.Application.Features.Emails;
-using DivineKids.Application.Features.Patients;
 using DivineKids.Domain.Entities.Emails;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore.Storage.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System.Net;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Text;
-using System.Text.Json.Serialization;
 
 namespace DivineKids.Infrastructure.Email;
 
